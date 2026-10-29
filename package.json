@@ -1,0 +1,21 @@
+{
+  "name": "@apextick/mcp-starter",
+  "version": "1.0.0",
+  "description": "ApexTick Market Data & Options MCP Server (Streamable HTTP & Stdio Bridge)",
+  "type": "module",
+  "bin": {
+    "apextick-mcp": "./mcp/apextick-mcp.mjs"
+  },
+  "scripts": {
+    "start": "node ./mcp/apextick-mcp.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apextick/apextick-starter-kit.git"
+  },
+  "homepage": "https://docs.apextick.com/mcp",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

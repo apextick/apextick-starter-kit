@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "apextick": {
+      "url": "https://api.apextick.com/mcp",
+      "headers": {
+        "apikey": "dk_your_key_here"
+      }
+    }
+  }
+}

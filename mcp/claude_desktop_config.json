@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "apextick": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://api.apextick.com/mcp",
+        "--header",
+        "apikey: dk_your_key_here"
+      ]
+    }
+  }
+}
