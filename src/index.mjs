@@ -74,7 +74,7 @@ const TOOLS = [
   {
     name: 'get_quote',
     description:
-      'Current quote for one ticker: price, change, % change, volume and timestamp. Returns compact JSON.',
+      'Spot price tick for a single ticker: latest price, session change, % change, volume and timestamp. Use when only the current price tick is needed; does not fetch valuation multiples, technical indicators or option chains.',
     annotations: { title: 'Get quote', readOnlyHint: true, idempotentHint: true },
     inputSchema: {
       type: 'object',
@@ -91,7 +91,7 @@ const TOOLS = [
   {
     name: 'analyze_ticker',
     description:
-      'Concise snapshot of one ticker: current session change and range, a session-based stance, and valuation multiples (market cap, P/E, P/B, EPS, ROE, dividend yield). Returns compact JSON.',
+      'Fundamental valuation snapshot for a single ticker: company valuation multiples (market cap, TTM revenue, P/E, P/B, P/S, EPS, ROE, dividend yield) alongside session range positioning and 52-week high distance. Use for fundamental valuation analysis; does not fetch technical indicators, earnings dates or option chains.',
     annotations: { title: 'Analyze ticker', readOnlyHint: true, idempotentHint: true },
     inputSchema: {
       type: 'object',
@@ -108,7 +108,7 @@ const TOOLS = [
   {
     name: 'explain_price_move',
     description:
-      'Structured context for explaining why a ticker is up or down today: session move (gap, range, move vs ATR), technical position (RSI, moving averages, MACD, volatility) and recent/upcoming earnings, plus pre-computed signals. Returns compact JSON for the model to reason over.',
+      'Technical and catalyst attribution for why a single ticker moved today: technical indicators (RSI-14, SMA-20/50/200, MACD, ATR-14, 30-day volatility), gap/range vs ATR signals and recent/upcoming earnings surprises. Use for technical and catalyst analysis; does not fetch fundamental valuation multiples or option chains.',
     annotations: { title: 'Explain price move', readOnlyHint: true, idempotentHint: true },
     inputSchema: {
       type: 'object',
@@ -125,7 +125,7 @@ const TOOLS = [
   {
     name: 'get_watchlist_brief',
     description:
-      'One-call brief for up to 20 tickers as a compact Markdown table (price, change, % change, day range, volume) with a breadth summary. Uses a single batched quote request.',
+      'Multi-ticker batch comparison table for 1 to 20 symbols in a single request, returning a compact Markdown table (price, change, % change, day range, volume) and market breadth summary. Use for multi-symbol portfolio or watchlist checks rather than single-ticker deep dives.',
     annotations: { title: 'Watchlist brief', readOnlyHint: true, idempotentHint: true },
     inputSchema: {
       type: 'object',
@@ -143,7 +143,7 @@ const TOOLS = [
   {
     name: 'screen_market',
     description:
-      'Market screen returning top gainers, top losers, volume leaders (with sector and market cap for equities) and/or the highest implied-volatility option underlyings. Supports optional sector (e.g. Technology, Healthcare, Financial Services) and min_market_cap filters for equities. Returns compact JSON lists.',
+      "Cross-market discovery screener returning top gainers, top losers, volume leaders (with optional GICS sector and min_market_cap filters for equities) and highest implied-volatility option underlyings. Use to discover candidate tickers across the market; to inspect a specific symbol's option chain, expirations and Greeks, use get_options_chain.",
     annotations: { title: 'Screen market', readOnlyHint: true, idempotentHint: true },
     inputSchema: {
       type: 'object',
@@ -173,6 +173,36 @@ const TOOLS = [
           description: 'Rows per list, 1-20 (default 5)',
         },
       },
+    },
+  },
+  {
+    name: 'get_options_chain',
+    description:
+      'Option chain, expiration dates and Black-Scholes Greeks lookup for a single underlying ticker: returns available expiration dates and liquid call/put contracts with strike, bid, ask, implied volatility, volume, open interest and Greeks (delta, gamma, theta, vega, rho). Supports optional expiration (YYYY-MM-DD), option_type (call, put, all) and limit filters.',
+    annotations: { title: 'Get options chain', readOnlyHint: true, idempotentHint: true },
+    inputSchema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        symbol: {
+          type: 'string',
+          description: 'Underlying equity or ETF ticker in standard market notation, e.g. AAPL, NVDA, SPY, QQQ',
+        },
+        expiration: {
+          type: 'string',
+          description:
+            'Optional expiration date filter in YYYY-MM-DD format (e.g. 2026-11-20). Omit to return available expiration dates and the most liquid near-the-money contracts across upcoming expiries',
+        },
+        option_type: {
+          type: 'string',
+          description: 'Optional contract type filter: all (default: both calls and puts), call or put',
+        },
+        limit: {
+          type: 'integer',
+          description: 'Maximum number of option contracts to return, 1-50 (default 10, ranked by liquidity and proximity to the underlying price)',
+        },
+      },
+      required: ['symbol'],
     },
   },
 ];
@@ -351,6 +381,54 @@ async function handleScreenMarket(args) {
   return JSON.stringify(out);
 }
 
+function parseOCCExpiration(occ) {
+  const s = String(occ || '');
+  if (s.length < 15) return undefined;
+  const d = s.slice(s.length - 15, s.length - 9);
+  if (!/^\d{6}$/.test(d)) return undefined;
+  return `20${d.slice(0, 2)}-${d.slice(2, 4)}-${d.slice(4, 6)}`;
+}
+
+async function handleGetOptionsChain(args) {
+  const sym = normalizeSymbol(args?.symbol);
+  const exp = String(args?.expiration || '').trim();
+  const optTypeRaw = String(args?.option_type || 'all').trim().toLowerCase();
+  const contract = optTypeRaw === 'call' || optTypeRaw === 'c' ? 'c' : optTypeRaw === 'put' || optTypeRaw === 'p' ? 'p' : '';
+  const limit = Math.min(Math.max(Number(args?.limit || 10), 1), 50);
+
+  const [chainRes, quoteRes] = await Promise.allSettled([
+    apiGet('/v1/options/chain', { symbol: sym, expiry: exp || undefined, contract: contract || undefined }),
+    apiGet('/v1/market/quote', { symbol: sym }),
+  ]);
+  if (chainRes.status === 'rejected') throw chainRes.reason;
+
+  const chain = chainRes.value || {};
+  const spot = quoteRes.status === 'fulfilled' && quoteRes.value?.data?.[0]?.price ? round2(quoteRes.value.data[0].price) : undefined;
+  const options = Array.isArray(chain.options) ? chain.options : [];
+  const exps = [...new Set(options.map((c) => parseOCCExpiration(c.occ_symbol)).filter(Boolean))].sort();
+
+  const contracts = options.slice(0, limit).map((c) => ({
+    occ_symbol: String(c.occ_symbol || '').trim(),
+    expiration: parseOCCExpiration(c.occ_symbol) || exp || undefined,
+    type: c.type,
+    strike: round2(c.strike),
+    bid: round2(c.bid),
+    ask: round2(c.ask),
+    implied_volatility: c.implied_volatility ? Math.round(Number(c.implied_volatility) * 10000) / 10000 : 0,
+    volume: formatAbbrev(c.volume),
+    open_interest: formatAbbrev(c.open_interest),
+    greeks: c.greeks,
+  }));
+
+  return JSON.stringify({
+    underlying_symbol: sym,
+    underlying_price: spot,
+    selected_expiration: exp || undefined,
+    available_expirations: exps,
+    contracts,
+  });
+}
+
 const server = new Server(
   {
     name: 'apextick',
@@ -400,6 +478,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case 'screen_market':
         text = await handleScreenMarket(args);
+        break;
+      case 'get_options_chain':
+        text = await handleGetOptionsChain(args);
         break;
       default:
         return {
