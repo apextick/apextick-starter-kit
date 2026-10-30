@@ -14,6 +14,8 @@ Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) wit
 4. **`get_watchlist_brief`**: Batched quote table for up to 20 symbols in a single request.
 5. **`screen_market`**: Cross-market discovery screener returning top gainers, losers, volume leaders (with optional GICS `sector` and `min_market_cap` filters), and liquid high-IV options underlyings.
 6. **`get_options_chain`**: Option chain, expiration dates, and Black-Scholes Greeks (`delta`, `gamma`, `theta`, `vega`, `rho`) lookup for an underlying ticker.
+7. **`get_price_history`**: Historical OHLCV bars (`1m` to `1mo`) and optional corporate event calendar (earnings surprises, dividend ex-dates, and stock splits).
+8. **`search_tickers`**: Symbol and instrument directory search across 66,400+ global equities, ETFs, FX pairs, indices, and cryptocurrencies.
 
 ## Usage
 

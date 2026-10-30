@@ -74,7 +74,7 @@ const TOOLS = [
   {
     name: 'get_quote',
     description:
-      'Spot price tick for a single ticker: latest price, session change, % change, volume and timestamp. Use when only the current price tick is needed; does not fetch valuation multiples, technical indicators or option chains.',
+      'Spot price tick for a single ticker: latest price, session change, % change, volume and timestamp. Use when only the current price tick is needed; for historical OHLCV bars use get_price_history, and for valuation multiples use analyze_ticker.',
     annotations: { title: 'Get quote', readOnlyHint: true, idempotentHint: true },
     inputSchema: {
       type: 'object',
@@ -83,6 +83,73 @@ const TOOLS = [
         symbol: {
           type: 'string',
           description: 'Ticker in standard market notation, e.g. AAPL, BRK-B, BTC-USD, EURUSD=X',
+        },
+      },
+      required: ['symbol'],
+    },
+  },
+  {
+    name: 'search_tickers',
+    description:
+      'Symbol and instrument directory search across 66,400+ global equities, ETFs, FX pairs, indices and cryptocurrencies by company name or ticker symbol. Supports optional asset_class (equity, etf, fx, crypto, index), exchange and limit filters. Use to resolve unknown ticker symbols before calling per-ticker tools; does not fetch live prices or financial metrics.',
+    annotations: { title: 'Search tickers', readOnlyHint: true, idempotentHint: true },
+    inputSchema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Company name or ticker prefix to search for, e.g. Apple, NVDA, S&P 500, EURUSD, Bitcoin',
+        },
+        asset_class: {
+          type: 'string',
+          description: 'Optional asset class filter: equity, etf, fx, crypto or index',
+        },
+        exchange: {
+          type: 'string',
+          description: 'Optional exchange code filter, e.g. NMS, NYQ, LSE, XETRA',
+        },
+        limit: {
+          type: 'integer',
+          description: 'Maximum number of matching instruments to return, 1-50 (default 10)',
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'get_price_history',
+    description:
+      'Historical OHLCV time-series bars and corporate event calendar for a single ticker: returns open, high, low, close, volume and period return across configurable timeframes (1m, 5m, 15m, 30m, 1h, 1d, 1wk, 1mo) and date ranges (from, to), plus optional earnings calendar (upcoming and historical EPS estimates vs actuals), dividends and stock splits. Use for historical charts, backtesting and corporate event lookup; for the current spot tick only, use get_quote.',
+    annotations: { title: 'Get price history', readOnlyHint: true, idempotentHint: true },
+    inputSchema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        symbol: {
+          type: 'string',
+          description: 'Ticker in standard market notation, e.g. AAPL, BRK-B, BTC-USD, EURUSD=X',
+        },
+        resolution: {
+          type: 'string',
+          description: 'Bar timeframe: 1m, 5m, 15m, 30m, 1h, 1d (default), 1wk or 1mo',
+        },
+        from: {
+          type: 'string',
+          description: 'Optional start date in YYYY-MM-DD format',
+        },
+        to: {
+          type: 'string',
+          description: 'Optional end date in YYYY-MM-DD format',
+        },
+        limit: {
+          type: 'integer',
+          description: 'Maximum number of most recent bars to return, 1-250 (default 30)',
+        },
+        include_events: {
+          type: 'boolean',
+          description:
+            'Include quarterly earnings calendar (EPS estimate vs actual), dividend ex-dates and stock splits alongside the OHLCV series',
         },
       },
       required: ['symbol'],
@@ -429,6 +496,68 @@ async function handleGetOptionsChain(args) {
   });
 }
 
+async function handleSearchTickers(args) {
+  const query = String(args?.query || '').trim();
+  if (!query) throw new Error('query is required');
+  const limit = Math.min(Math.max(Number(args?.limit || 10), 1), 50);
+  const resp = await apiGet('/v1/reference/tickers', {
+    query,
+    asset_class: args?.asset_class ? String(args.asset_class).toLowerCase() : undefined,
+    exchange: args?.exchange ? String(args.exchange).toUpperCase() : undefined,
+  });
+  const results = (resp?.data || []).slice(0, limit);
+  return JSON.stringify({ query, count: results.length, results });
+}
+
+async function handleGetPriceHistory(args) {
+  const sym = normalizeSymbol(args?.symbol);
+  const resolution = String(args?.resolution || '1d').trim().toLowerCase();
+  const limit = Math.min(Math.max(Number(args?.limit || 30), 1), 250);
+  const includeEvents = Boolean(args?.include_events);
+
+  const tasks = [
+    apiGet('/v1/market/candles', {
+      symbol: sym,
+      resolution,
+      from: args?.from || undefined,
+      to: args?.to || undefined,
+    }),
+  ];
+  if (includeEvents) {
+    tasks.push(
+      apiGet('/v1/reference/earnings', { symbol: sym }),
+      apiGet('/v1/reference/dividends', { symbol: sym }),
+      apiGet('/v1/reference/splits', { symbol: sym })
+    );
+  }
+  const settled = await Promise.allSettled(tasks);
+  if (settled[0].status === 'rejected') throw settled[0].reason;
+
+  const raw = Array.isArray(settled[0].value?.data) ? settled[0].value.data.slice(-limit) : [];
+  const bars = raw.map((c) => ({
+    time: c.time,
+    open: round2(c.open),
+    high: round2(c.high),
+    low: round2(c.low),
+    close: round2(c.close),
+    volume: formatAbbrev(c.volume),
+  }));
+
+  const out = { symbol: sym, resolution, bar_count: bars.length, bars };
+  if (includeEvents) {
+    if (settled[1]?.status === 'fulfilled' && Array.isArray(settled[1].value?.earnings)) {
+      out.earnings = settled[1].value.earnings.slice(0, 8);
+    }
+    if (settled[2]?.status === 'fulfilled' && Array.isArray(settled[2].value?.data)) {
+      out.dividends = settled[2].value.data.slice(0, 8);
+    }
+    if (settled[3]?.status === 'fulfilled' && Array.isArray(settled[3].value?.data)) {
+      out.splits = settled[3].value.data.slice(0, 8);
+    }
+  }
+  return JSON.stringify(out);
+}
+
 const server = new Server(
   {
     name: 'apextick',
@@ -466,6 +595,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (name) {
       case 'get_quote':
         text = await handleGetQuote(args);
+        break;
+      case 'search_tickers':
+        text = await handleSearchTickers(args);
+        break;
+      case 'get_price_history':
+        text = await handleGetPriceHistory(args);
         break;
       case 'analyze_ticker':
         text = await handleAnalyzeTicker(args);
