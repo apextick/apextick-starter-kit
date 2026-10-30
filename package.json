@@ -1,13 +1,17 @@
 {
-  "name": "@apextick/mcp-starter",
+  "name": "@apextick/mcp-server",
   "version": "1.0.0",
-  "description": "ApexTick Market Data & Options MCP Server (Streamable HTTP & Stdio Bridge)",
+  "description": "Official ApexTick MCP Server providing global equities, ETFs, FX, crypto quotes, valuation multiples, technical indicators, earnings context, and options implied volatility screening.",
   "type": "module",
+  "main": "./src/index.mjs",
   "bin": {
-    "apextick-mcp": "./mcp/apextick-mcp.mjs"
+    "apextick-mcp": "./src/index.mjs"
   },
   "scripts": {
-    "start": "node ./mcp/apextick-mcp.mjs"
+    "start": "node ./src/index.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2"
   },
   "repository": {
     "type": "git",

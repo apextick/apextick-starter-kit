@@ -1,19 +1,57 @@
-# ApexTick Starter Kit — Market Data API, Excel Add-Ins & MCP Server
+# ApexTick MCP Server (`@apextick/mcp-server`)
 
-Official quickstart templates and configuration examples for **[ApexTick](https://apextick.com)** (`https://docs.apextick.com`):
+[![apextick/apextick-starter-kit MCP server](https://glama.ai/mcp/servers/apextick/apextick-starter-kit/badges/score.svg)](https://glama.ai/mcp/servers/apextick/apextick-starter-kit)
 
-* **Normalized REST & Event-Driven WebSocket API:** 66,400+ global equities, ETFs, FX pairs, cryptocurrencies, historical OHLCV candles, technical indicators (`RSI14`, `MACD`, `SMA`, `EMA`, `ATR14`, `RVOL20`), company fundamentals, ETF holdings, Options Chains with pre-calculated Greeks, and 16,700+ macroeconomic series.
-* **ApexTick Excel Lite & Native:** 17 dynamic-array formulas (`=APEXTICK.QUOTE`, `=APEXTICK.STREAM`, `=APEXTICK.OPTIONS.CHAIN`, `=APEXTICK.FINANCIALS`) with vectorized multi-symbol evaluation.
-* **Hosted Streamable HTTP MCP Server:** Connect Claude Desktop, Claude Code, Claude.ai Web, Cursor, and OpenCode via `https://api.apextick.com/mcp`.
+Official Model Context Protocol (MCP) server for **[ApexTick](https://apextick.com)** (`https://docs.apextick.com/mcp`), built on `@modelcontextprotocol/sdk`.
 
-## Contents
+Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) with low-latency access to **66,400+ global equities, ETFs, FX pairs, and cryptocurrencies**, valuation multiples, technical indicators (`RSI14`, `MACD`, `SMA20/50/200`, `ATR14`, `volatility30`), earnings surprise context, GICS sector movers, and options implied volatility screening.
 
-1. `excel/ApexTick-Starter-and-Test-Suite.xlsx` — 6-tab dynamic-array starter workbook for Excel on the Web, Mac, and Windows.
-2. `mcp/claude_desktop_config.json` & `mcp/cursor_mcp.json` — Ready-to-use Model Context Protocol configurations.
-3. `examples/python/quickstart.py` — Zero-dependency Python 3 example.
-4. `examples/javascript/quickstart.mjs` — Zero-dependency Node.js 20+ example.
-5. `examples/curl/smoke_test.sh` — cURL + `jq` command-line examples.
+## Tools Implemented (`src/index.mjs`)
 
-## Get a Free API Key
+1. **`get_quote`**: Consolidated quote for one ticker (price, change, % change, 52-week range, abbreviated volume, and timestamp).
+2. **`analyze_ticker`**: Concurrent quote + fundamentals snapshot (session range position, gap %, distance from 52-week high, and P/E, P/B, P/S, TTM Revenue, EPS, ROE, dividend yield).
+3. **`explain_price_move`**: Correlates session price move with technical indicators (`RSI14`, `SMA20/50/200`, `MACD`, `ATR14`) and recent/upcoming earnings surprises.
+4. **`get_watchlist_brief`**: Batched quote table for up to 20 symbols in a single request.
+5. **`screen_market`**: Screens top gainers, losers, volume leaders (with optional GICS `sector` and `min_market_cap` filters), and liquid high-IV options contracts.
 
-Create a free Hobbyist account (500 requests/day, no credit card required) at **[https://dash.apextick.com/register](https://dash.apextick.com/register)**.
+## Usage
+
+### Option 1: Local Stdio Server (`src/index.mjs` or Docker)
+
+```json
+{
+  "mcpServers": {
+    "apextick": {
+      "command": "node",
+      "args": ["/path/to/apextick-starter-kit/src/index.mjs"],
+      "env": {
+        "APEXTICK_API_KEY": "dk_your_key_here"
+      }
+    }
+  }
+}
+```
+
+### Option 2: Hosted Streamable HTTP Endpoint (`https://api.apextick.com/mcp`)
+
+```json
+{
+  "mcpServers": {
+    "apextick": {
+      "url": "https://api.apextick.com/mcp",
+      "headers": {
+        "apikey": "dk_your_key_here"
+      }
+    }
+  }
+}
+```
+
+## Additional Resources in This Repository
+
+* `excel/ApexTick-Starter-and-Test-Suite.xlsx` — 6-tab Excel dynamic-array starter workbook (`=APEXTICK.QUOTE`, `=APEXTICK.STREAM`, `=APEXTICK.OPTIONS.CHAIN`).
+* `examples/python/quickstart.py` & `examples/javascript/quickstart.mjs` — Direct REST API examples.
+
+## API Key
+
+Get a free Hobbyist API key (500 requests/day, no credit card required) at **[https://dash.apextick.com/register](https://dash.apextick.com/register)**.
