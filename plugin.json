@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "apextick-market-data-and-options-mcp",
+  "version": "1.0.0",
+  "description": "Institutional-grade market data MCP server for global equities, ETFs, FX, crypto quotes, OHLCV history, fundamentals, technicals, and options Greeks.",
+  "author": {
+    "name": "ApexTick",
+    "email": "support@apextick.com",
+    "url": "https://apextick.com"
+  },
+  "homepage": "https://docs.apextick.com/mcp",
+  "repository": "https://github.com/apextick/apextick-starter-kit",
+  "license": "MIT",
+  "keywords": [
+    "finance",
+    "market-data",
+    "stocks",
+    "options",
+    "crypto",
+    "forex",
+    "quant",
+    "mcp"
+  ]
+}
