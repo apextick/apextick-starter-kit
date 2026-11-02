@@ -1,6 +1,7 @@
 # ApexTick MCP Server (`@apextick/mcp-server`)
 
 [![apextick/apextick-starter-kit MCP server](https://glama.ai/mcp/servers/apextick/apextick-starter-kit/badges/score.svg)](https://glama.ai/mcp/servers/apextick/apextick-starter-kit)
+[![ApexTick Market Data & Options MCP on mcprush](https://mcprush.com/badge/apextick-market-data-options-mcp/score.svg)](https://mcprush.com/to/apextick-market-data-options-mcp?ref=badge)
 
 Official Model Context Protocol (MCP) server for **[ApexTick](https://apextick.com)** (`https://docs.apextick.com/mcp`), built on `@modelcontextprotocol/sdk`.
 
