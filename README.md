@@ -6,6 +6,8 @@ Official Model Context Protocol (MCP) server for **[ApexTick](https://apextick.c
 
 Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) with low-latency access to **66,400+ global equities, ETFs, FX pairs, and cryptocurrencies**, valuation multiples, technical indicators (`RSI14`, `MACD`, `SMA20/50/200`, `ATR14`, `volatility30`), earnings surprise context, GICS sector movers, and options implied volatility screening.
 
+![ApexTick MCP Server in Claude Desktop](./assets/demos/demo-claude-mcp.gif)
+
 ## Tools Implemented (`src/index.mjs`)
 
 1. **`get_quote`**: Consolidated quote for one ticker (price, change, % change, 52-week range, abbreviated volume, and timestamp).
@@ -50,9 +52,16 @@ Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) wit
 }
 ```
 
-## Additional Resources in This Repository
+## Ready-to-Use Excel Workbooks (`excel/`) & REST Quickstarts
 
-* `excel/ApexTick-Starter-and-Test-Suite.xlsx` — 6-tab Excel dynamic-array starter workbook (`=APEXTICK.QUOTE`, `=APEXTICK.STREAM`, `=APEXTICK.OPTIONS.CHAIN`).
+![ApexTick Excel Options Chains & Greeks](./assets/demos/demo-excel-greeks.gif)
+
+All 4 workbooks work natively in both **ApexTick Excel Lite** (`excel.office.com`, Mac, Windows) and **ApexTick Excel Native** (Windows desktop):
+
+* **[`excel/ApexTick-Starter-and-Test-Suite.xlsx`](./excel/ApexTick-Starter-and-Test-Suite.xlsx)** — Complete 6-tab dynamic-array test suite covering all 17 `=APEXTICK.*` worksheet functions (`=APEXTICK.QUOTE`, `=APEXTICK.STREAM`, `=APEXTICK.OPTIONS.CHAIN`, `=APEXTICK.FINANCIALS`, `=APEXTICK.ECO`).
+* **[`excel/Covered-Call-Wheel-Tracker.xlsx`](./excel/Covered-Call-Wheel-Tracker.xlsx)** — Covered call & cash-secured put wheel tracker with 50ms batched quotes, technical regime indicators (`RSI14`, `volatility30`, `ATR14`), and liquid options screener (`=APEXTICK.OPTIONS.SCREENER`).
+* **[`excel/Options-IV-Greeks-Calculator.xlsx`](./excel/Options-IV-Greeks-Calculator.xlsx)** — Side-by-side Call & Put options chain analyzer (`=APEXTICK.OPTIONS.CHAIN`) with analytical Black-Scholes Greeks (`Delta`, `Gamma`, `Theta`, `Vega`, `Implied Volatility`).
+* **[`excel/SP500-Tech-Watchlist-Valuation.xlsx`](./excel/SP500-Tech-Watchlist-Valuation.xlsx)** — 20-symbol S&P 500 & Nasdaq-100 valuation and momentum watchlist (`P/E`, `Sector`, `RSI14`, `SMA200`, `=APEXTICK.FINANCIALS`, `=APEXTICK.ETF.HOLDINGS`).
 * `examples/python/quickstart.py` & `examples/javascript/quickstart.mjs` — Direct REST API examples.
 
 ## API Key
