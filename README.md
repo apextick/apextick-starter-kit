@@ -4,6 +4,7 @@
 [![ApexTick Market Data & Options MCP on mcprush](https://mcprush.com/badge/apextick-market-data-options-mcp/score.svg)](https://mcprush.com/to/apextick-market-data-options-mcp?ref=badge)
 
 Official Model Context Protocol (MCP) server for **[ApexTick](https://apextick.com)** (`https://docs.apextick.com/mcp`), built on `@modelcontextprotocol/sdk`.
+- **Live NYSE Market Pulse & Alerts Showcase (Telegram):** [`https://t.me/apextick_pulse`](https://t.me/apextick_pulse) (`08:30 ET` Pre-Market & `16:30 ET` Closing Bell briefings + intraday `RVOL20` / `RSI-14` / `MACD` triggers).
 
 Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) with low-latency access to **66,400+ global equities, ETFs, FX pairs, and cryptocurrencies**, valuation multiples, technical indicators (`RSI14`, `MACD`, `SMA20/50/200`, `ATR14`, `volatility30`), earnings surprise context, GICS sector movers, and options implied volatility screening.
 
