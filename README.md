@@ -11,14 +11,14 @@ Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) wit
 
 ## Tools Implemented (`src/index.mjs`)
 
-1. **`get_quote`**: Consolidated quote for one ticker (price, change, % change, 52-week range, abbreviated volume, and timestamp).
-2. **`analyze_ticker`**: Concurrent quote + fundamentals snapshot (session range position, gap %, distance from 52-week high, and P/E, P/B, P/S, TTM Revenue, EPS, ROE, dividend yield).
-3. **`explain_price_move`**: Correlates session price move with technical indicators (`RSI14`, `SMA20/50/200`, `MACD`, `ATR14`) and recent/upcoming earnings surprises.
-4. **`get_watchlist_brief`**: Batched quote table for up to 20 symbols in a single request.
-5. **`screen_market`**: Cross-market discovery screener returning top gainers, losers, volume leaders (with optional GICS `sector` and `min_market_cap` filters), and liquid high-IV options underlyings.
-6. **`get_options_chain`**: Option chain, expiration dates, and Black-Scholes Greeks (`delta`, `gamma`, `theta`, `vega`, `rho`) lookup for an underlying ticker.
-7. **`get_price_history`**: Historical OHLCV bars (`1m` to `1mo`) and optional corporate event calendar (earnings surprises, dividend ex-dates, and stock splits).
-8. **`search_tickers`**: Symbol and instrument directory search across 66,400+ global equities, ETFs, FX pairs, indices, and cryptocurrencies.
+1. **`get_quote`** *(Hobbyist $0+)*: Consolidated quote for one ticker (price, change, % change, 52-week range, abbreviated volume, and timestamp).
+2. **`search_tickers`** *(Hobbyist $0+)*: Symbol and instrument directory search across 66,400+ global equities, ETFs, FX pairs, indices, and cryptocurrencies.
+3. **`get_watchlist_brief`** *(Hobbyist $0+)*: Batched quote table for up to 20 symbols in a single request.
+4. **`get_price_history`** *(Hobbyist $0+)*: Historical OHLCV bars (`1m` to `1mo`) and optional corporate event calendar (earnings surprises, dividend ex-dates, and stock splits on Trader Pro+).
+5. **`analyze_ticker`** *(Trader Pro+)*: Concurrent quote + fundamentals snapshot (session range position, gap %, distance from 52-week high, and P/E, P/B, P/S, TTM Revenue, EPS, ROE, dividend yield).
+6. **`explain_price_move`** *(Trader Pro+)*: Correlates session price move with technical indicators (`RSI14`, `SMA20/50/200`, `MACD`, `ATR14`) and recent/upcoming earnings surprises.
+7. **`get_options_chain`** *(Trader Pro+)*: Option chain, expiration dates, and Black-Scholes Greeks (`delta`, `gamma`, `theta`, `vega`, `rho`) lookup for an underlying ticker.
+8. **`screen_market`** *(Quant & Community+)*: Cross-market discovery screener returning top gainers, losers, volume leaders (with optional GICS `sector` and `min_market_cap` filters), and liquid high-IV options underlyings.
 
 ## Usage
 
