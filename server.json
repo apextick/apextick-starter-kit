@@ -4,11 +4,17 @@
   "title": "ApexTick Market Data & Options MCP",
   "description": "Global equities, ETFs, FX & crypto quotes, OHLCV history, fundamentals, technicals & options Greeks",
   "websiteUrl": "https://docs.apextick.com/mcp",
+  "icons": [
+    {
+      "src": "https://apextick.com/assets/img/favicon.png",
+      "mimeType": "image/png"
+    }
+  ],
   "repository": {
     "url": "https://github.com/apextick/apextick-starter-kit",
     "source": "github"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "remotes": [
     {
       "type": "streamable-http",
@@ -17,7 +23,7 @@
         {
           "name": "apikey",
           "description": "ApexTick API key (free key at https://dash.apextick.com/register)",
-          "isRequired": true,
+          "isRequired": false,
           "isSecret": true
         }
       ]
