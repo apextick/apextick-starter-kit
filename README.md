@@ -62,7 +62,7 @@ All 4 workbooks work natively in both **ApexTick Excel Lite** (`excel.office.com
 
 * **[`excel/ApexTick-Starter-and-Test-Suite.xlsx`](./excel/ApexTick-Starter-and-Test-Suite.xlsx)** — Complete 6-tab dynamic-array test suite covering all 17 `=APEXTICK.*` worksheet functions (`=APEXTICK.QUOTE`, `=APEXTICK.STREAM`, `=APEXTICK.OPTIONS.CHAIN`, `=APEXTICK.FINANCIALS`, `=APEXTICK.ECO`).
 * **[`excel/Covered-Call-Wheel-Tracker.xlsx`](./excel/Covered-Call-Wheel-Tracker.xlsx)** — Covered call & cash-secured put wheel tracker with 50ms batched quotes, technical regime indicators (`RSI14`, `volatility30`, `ATR14`), and liquid options screener (`=APEXTICK.OPTIONS.SCREENER`).
-* **[`excel/Options-IV-Greeks-Calculator.xlsx`](./excel/Options-IV-Greeks-Calculator.xlsx)** — Side-by-side Call & Put options chain analyzer (`=APEXTICK.OPTIONS.CHAIN`) with analytical Black-Scholes Greeks (`Delta`, `Gamma`, `Theta`, `Vega`, `Implied Volatility`).
+* **[`excel/Options-IV-Greeks-Calculator.xlsx`](./excel/Options-IV-Greeks-Calculator.xlsx)** — Side-by-side Call & Put options chain analyzer (`=APEXTICK.OPTIONS.CHAIN`) with analytical Black-Scholes Greeks (`Delta`, `Gamma`, `Theta`, `Vega`, `Implied Volatility`), plus daily bars for active and expired contracts.
 * **[`excel/SP500-Tech-Watchlist-Valuation.xlsx`](./excel/SP500-Tech-Watchlist-Valuation.xlsx)** — 20-symbol S&P 500 & Nasdaq-100 valuation and momentum watchlist (`P/E`, `Sector`, `RSI14`, `SMA200`, `=APEXTICK.FINANCIALS`, `=APEXTICK.ETF.HOLDINGS`).
 * `examples/python/quickstart.py` & `examples/javascript/quickstart.mjs` — Direct REST API examples.
 
