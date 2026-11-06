@@ -245,7 +245,7 @@ const TOOLS = [
   {
     name: 'get_options_chain',
     description:
-      'Option chain, expiration dates and Black-Scholes Greeks lookup for a single underlying ticker: returns available expiration dates and liquid call/put contracts with strike, bid, ask, implied volatility, volume, open interest and Greeks (delta, gamma, theta, vega, rho). Supports optional expiration (YYYY-MM-DD), option_type (call, put, all) and limit filters.',
+      'Option chain, expiration dates, historical option contract bars, and Black-Scholes Greeks lookup for a single underlying ticker: returns available expiration dates and liquid call/put contracts with strike, bid, ask, implied volatility, volume, open interest and Greeks (delta, gamma, theta, vega, rho). When strike is also provided (with expiration and option_type call/put), returns historical daily OHLCV, open interest, implied volatility and Black-Scholes Greeks for that active or expired option contract.',
     annotations: { title: 'Get options chain', readOnlyHint: true, idempotentHint: true },
     inputSchema: {
       type: 'object',
@@ -258,15 +258,29 @@ const TOOLS = [
         expiration: {
           type: 'string',
           description:
-            'Optional expiration date filter in YYYY-MM-DD format (e.g. 2026-11-20). Omit to return available expiration dates and the most liquid near-the-money contracts across upcoming expiries',
+            'Optional expiration date filter in YYYY-MM-DD format (e.g. 2026-11-20). Required when strike is specified for historical contract bars',
         },
         option_type: {
           type: 'string',
           description: 'Optional contract type filter: all (default: both calls and puts), call or put',
         },
+        strike: {
+          type: 'number',
+          description:
+            'Optional strike price (e.g. 200 or 345) to retrieve historical daily OHLCV, Open Interest, Implied Volatility and Black-Scholes Greeks for a specific active or expired option contract (requires expiration and option_type call or put)',
+        },
+        from: {
+          type: 'string',
+          description: 'Optional start date in YYYY-MM-DD format when strike is specified for historical option bars',
+        },
+        to: {
+          type: 'string',
+          description: 'Optional end date in YYYY-MM-DD format when strike is specified for historical option bars',
+        },
         limit: {
           type: 'integer',
-          description: 'Maximum number of option contracts to return, 1-50 (default 10, ranked by liquidity and proximity to the underlying price)',
+          description:
+            'Maximum number of option contracts or historical daily bars to return, 1-50 (default 10 for chains, 30 for historical bars)',
         },
       },
       required: ['symbol'],
@@ -461,7 +475,45 @@ async function handleGetOptionsChain(args) {
   const exp = String(args?.expiration || '').trim();
   const optTypeRaw = String(args?.option_type || 'all').trim().toLowerCase();
   const contract = optTypeRaw === 'call' || optTypeRaw === 'c' ? 'c' : optTypeRaw === 'put' || optTypeRaw === 'p' ? 'p' : '';
-  const limit = Math.min(Math.max(Number(args?.limit || 10), 1), 50);
+  const strike = Number(args?.strike || 0);
+  const from = String(args?.from || '').trim();
+  const to = String(args?.to || '').trim();
+  const limit = Math.min(Math.max(Number(args?.limit || (strike > 0 ? 30 : 10)), 1), 50);
+
+  if (strike > 0) {
+    if (!exp) throw new Error('expiration (YYYY-MM-DD) is required when strike is specified for historical option bars');
+    if (!contract) throw new Error('option_type (call or put) is required when strike is specified for historical option bars');
+    const hist = await apiGet('/v1/options/history', {
+      symbol: sym,
+      expiry: exp,
+      contract,
+      strike,
+      from: from || undefined,
+      to: to || undefined,
+      limit,
+    });
+    const bars = (hist?.bars || []).map((b) => ({
+      date: b.date,
+      open: round2(b.open),
+      high: round2(b.high),
+      low: round2(b.low),
+      close: round2(b.close),
+      bid: round2(b.bid),
+      ask: round2(b.ask),
+      volume: formatAbbrev(b.volume),
+      open_interest: formatAbbrev(b.open_interest),
+      implied_volatility: b.implied_volatility ? Math.round(Number(b.implied_volatility) * 10000) / 10000 : 0,
+      greeks: b.greeks,
+    }));
+    return JSON.stringify({
+      underlying_symbol: sym,
+      selected_expiration: hist?.expiration_date || exp,
+      occ_symbol: String(hist?.occ_symbol || '').trim() || undefined,
+      option_type: hist?.type || optTypeRaw,
+      strike: round2(hist?.strike || strike),
+      historical_bars: bars,
+    });
+  }
 
   const [chainRes, quoteRes] = await Promise.allSettled([
     apiGet('/v1/options/chain', { symbol: sym, expiry: exp || undefined, contract: contract || undefined }),

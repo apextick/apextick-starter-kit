@@ -18,7 +18,7 @@ Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) wit
 4. **`get_price_history`** *(Hobbyist $0+)*: Historical OHLCV bars (`1m` to `1mo`) and optional corporate event calendar (earnings surprises, dividend ex-dates, and stock splits on Trader Pro+).
 5. **`analyze_ticker`** *(Trader Pro+)*: Concurrent quote + fundamentals snapshot (session range position, gap %, distance from 52-week high, and P/E, P/B, P/S, TTM Revenue, EPS, ROE, dividend yield).
 6. **`explain_price_move`** *(Trader Pro+)*: Correlates session price move with technical indicators (`RSI14`, `SMA20/50/200`, `MACD`, `ATR14`) and recent/upcoming earnings surprises.
-7. **`get_options_chain`** *(Trader Pro+)*: Option chain, expiration dates, and Black-Scholes Greeks (`delta`, `gamma`, `theta`, `vega`, `rho`) lookup for an underlying ticker.
+7. **`get_options_chain`** *(Trader Pro+)*: Option chain, expiration dates, historical option contract daily OHLCV + IV + Greeks (for both active and expired contracts when `strike` is specified), and Black-Scholes Greeks (`delta`, `gamma`, `theta`, `vega`, `rho`) lookup for an underlying ticker.
 8. **`screen_market`** *(Quant & Community+)*: Cross-market discovery screener returning top gainers, losers, volume leaders (with optional GICS `sector` and `min_market_cap` filters), and liquid high-IV options underlyings.
 
 ## Usage
