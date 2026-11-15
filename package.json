@@ -2,11 +2,29 @@
   "name": "@apextick/mcp-server",
   "version": "1.0.0",
   "description": "Official ApexTick MCP Server providing global equities, ETFs, FX, crypto quotes, valuation multiples, technical indicators, earnings context, and options implied volatility screening.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "stocks",
+    "options",
+    "greeks",
+    "market-data",
+    "finance",
+    "crypto",
+    "claude",
+    "cursor"
+  ],
   "type": "module",
   "main": "./src/index.mjs",
   "bin": {
     "apextick-mcp": "./src/index.mjs"
   },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE",
+    "server.json"
+  ],
   "scripts": {
     "start": "node ./src/index.mjs"
   },

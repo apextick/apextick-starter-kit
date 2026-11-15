@@ -2,23 +2,75 @@
 /**
  * Official ApexTick Model Context Protocol (MCP) Server
  *
- * Implements the 5 ApexTick market intelligence tools over stdio using the
+ * Implements the 8 ApexTick market intelligence tools over stdio using the
  * official `@modelcontextprotocol/sdk` and the ApexTick `/v1/*` REST API:
- *   1. `get_quote`
- *   2. `analyze_ticker`
- *   3. `explain_price_move`
- *   4. `get_watchlist_brief`
- *   5. `screen_market`
+ * get_quote, search_tickers, get_price_history, analyze_ticker,
+ * explain_price_move, get_watchlist_brief, screen_market and get_options_chain.
+ *
+ * Usage: npx -y @apextick/mcp-server [--help | --version]
  */
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
+import { readFileSync } from 'node:fs';
+
+function packageVersion() {
+  try {
+    return JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version || '1.0.0';
+  } catch {
+    return '1.0.0';
+  }
+}
+
+const VERSION = packageVersion();
+
+const USAGE = `ApexTick MCP Server v${VERSION}
+Market data, technical indicators, fundamentals and options tools for AI agents, over stdio.
+
+Usage:
+  npx -y @apextick/mcp-server             Start the MCP server on stdin/stdout
+  npx -y @apextick/mcp-server --help      Show this help (-h)
+  npx -y @apextick/mcp-server --version   Print the version (-v)
+
+Environment:
+  APEXTICK_API_KEY   Required. Your API key; get a free one at https://dash.apextick.com/register
+  APEXTICK_API_URL   Optional. API base URL (default: https://api.apextick.com)
+
+Claude Desktop / Cursor (mcpServers entry):
+  "apextick": {
+    "command": "npx",
+    "args": ["-y", "@apextick/mcp-server"],
+    "env": { "APEXTICK_API_KEY": "dk_your_key_here" }
+  }
+
+Tools: get_quote, search_tickers, get_watchlist_brief, get_price_history,
+       analyze_ticker, explain_price_move, get_options_chain, screen_market
+Docs:  https://docs.apextick.com/mcp
+`;
+
+// Flags are handled before the MCP SDK loads, so --help and --version work even
+// where dependencies are not installed (e.g. registry scanners).
+const cliArgs = process.argv.slice(2);
+if (cliArgs.some((a) => a === '--help' || a === '-h')) {
+  process.stdout.write(USAGE);
+  process.exit(0);
+}
+if (cliArgs.some((a) => a === '--version' || a === '-v')) {
+  process.stdout.write(`${VERSION}\n`);
+  process.exit(0);
+}
+const unknownArg = cliArgs.find((a) => a.startsWith('-'));
+if (unknownArg) {
+  process.stderr.write(`Unknown option: ${unknownArg}\n\n${USAGE}`);
+  process.exit(2);
+}
+
+const { Server } = await import('@modelcontextprotocol/sdk/server/index.js');
+const { StdioServerTransport } = await import('@modelcontextprotocol/sdk/server/stdio.js');
+const {
   CallToolRequestSchema,
   ListPromptsRequestSchema,
   ListResourcesRequestSchema,
   ListResourceTemplatesRequestSchema,
   ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+} = await import('@modelcontextprotocol/sdk/types.js');
 
 const BASE_URL = (process.env.APEXTICK_API_URL || 'https://api.apextick.com').replace(/\/$/, '');
 const API_KEY = process.env.APEXTICK_API_KEY || '';
@@ -343,18 +395,30 @@ async function handleAnalyzeTicker(args) {
     session_stance: q.change_percent >= 1.5 ? 'strong_up' : q.change_percent <= -1.5 ? 'strong_down' : q.change_percent >= 0 ? 'up' : 'down',
   };
 
-  if (finRes.status === 'fulfilled' && finRes.value?.metrics) {
-    const m = finRes.value.metrics;
-    out.valuation = {
+  if (finRes.status === 'fulfilled' && finRes.value) {
+    const m = finRes.value.metrics || finRes.value;
+    const pb = m.price_to_book ?? m.pb_ratio;
+    const ps = m.price_to_sales ?? m.ps_ratio;
+    const val = {
       market_cap: formatAbbrev(m.market_cap),
       revenue_ttm: formatAbbrev(m.revenue_ttm),
       pe: m.pe_ratio ? round2(m.pe_ratio) : undefined,
-      pb: m.pb_ratio ? round2(m.pb_ratio) : undefined,
-      ps: m.ps_ratio ? round2(m.ps_ratio) : undefined,
+      pb: pb ? round2(pb) : undefined,
+      ps: ps ? round2(ps) : undefined,
       eps_ttm: m.eps_ttm ? round2(m.eps_ttm) : undefined,
+      profit_margin: m.profit_margin ? round2(m.profit_margin) : undefined,
       roe: m.roe ? round2(m.roe) : undefined,
+      roa: m.roa ? round2(m.roa) : undefined,
+      debt_to_equity: m.debt_to_equity ? round2(m.debt_to_equity) : undefined,
       dividend_yield: m.dividend_yield ? round2(m.dividend_yield) : undefined,
+      beta: m.beta ? round2(m.beta) : undefined,
+      institutional_pct: m.institutional_pct ? round2(m.institutional_pct) : undefined,
+      revenue_growth_5y: m.revenue_growth_5y ? round2(m.revenue_growth_5y) : undefined,
+      return_1y: m.return_1y ? round2(m.return_1y) : undefined,
     };
+    if (Object.values(val).some((v) => v !== undefined)) {
+      out.valuation = val;
+    }
   }
   return JSON.stringify(out);
 }
@@ -613,7 +677,7 @@ async function handleGetPriceHistory(args) {
 const server = new Server(
   {
     name: 'apextick',
-    version: '1.0.0',
+    version: VERSION,
   },
   {
     capabilities: {
@@ -685,6 +749,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 });
+
+if (!API_KEY) {
+  // stdout carries the protocol, so notices go to stderr. Tool listing still works without a key.
+  process.stderr.write('apextick-mcp: APEXTICK_API_KEY is not set; tool calls will fail until it is. Run with --help for setup.\n');
+}
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

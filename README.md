@@ -24,7 +24,25 @@ Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) wit
 
 ## Usage
 
-### Option 1: Local Stdio Server (`src/index.mjs` or Docker)
+### Option 1: `npx @apextick/mcp-server` (no clone needed)
+
+```json
+{
+  "mcpServers": {
+    "apextick": {
+      "command": "npx",
+      "args": ["-y", "@apextick/mcp-server"],
+      "env": {
+        "APEXTICK_API_KEY": "dk_your_key_here"
+      }
+    }
+  }
+}
+```
+
+Check your setup with `npx -y @apextick/mcp-server --help` (also `--version`). To run straight from this repository instead, use `npx -y github:apextick/apextick-starter-kit`.
+
+### Option 2: Local Stdio Server (`src/index.mjs` or Docker)
 
 ```json
 {
@@ -40,7 +58,7 @@ Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) wit
 }
 ```
 
-### Option 2: Hosted Streamable HTTP Endpoint (`https://api.apextick.com/mcp`)
+### Option 3: Hosted Streamable HTTP Endpoint (`https://api.apextick.com/mcp`)
 
 ```json
 {
@@ -54,6 +72,35 @@ Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) wit
   }
 }
 ```
+
+## Python Client (`python/`)
+
+The official `apextick` package for Python 3.9+ uses only the standard library, so it runs anywhere, including Google Colab. Optional pandas helpers come with the `[pandas]` extra.
+
+```bash
+pip install "git+https://github.com/apextick/apextick-starter-kit.git#subdirectory=python"
+```
+
+```python
+from apextick import ApexTickClient, Ticker
+
+client = ApexTickClient()                                   # reads APEXTICK_API_KEY
+client.quote(["AAPL", "MSFT", "NVDA", "BTC-USD", "EURUSD=X"])  # up to 50 symbols in one request
+client.candles("AAPL", resolution="1d", limit=90)           # OHLCV bars, oldest first
+Ticker("SPY", client).options_chain(contract_type="call")   # chain with IV & Greeks (Trader Pro+)
+client.options_history("AAPL240621C00200000")               # one contract's daily bars (Trader Pro+)
+```
+
+Covers quotes, candles, ticker search, technical indicators, fundamentals, option chains and option contract history, with a `Ticker` facade for quick migration from per-ticker scripts and `ApexTickAPIError` for 401/403/429 responses. See [`python/README.md`](./python/README.md).
+
+## Google Colab Notebooks (`notebooks/`)
+
+| Notebook | What it shows | |
+|---|---|---|
+| [`01_batched_quotes_and_ohlcv_quickstart.ipynb`](./notebooks/01_batched_quotes_and_ohlcv_quickstart.ipynb) | One 50-symbol quote request instead of a per-ticker loop, daily OHLCV bars, and pre-computed `RSI-14`, `MACD` and `SMA-200` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/apextick/apextick-starter-kit/blob/main/notebooks/01_batched_quotes_and_ohlcv_quickstart.ipynb) |
+| [`02_historical_options_greeks_backtest.ipynb`](./notebooks/02_historical_options_greeks_backtest.ipynb) | Live option chain with IV and Black-Scholes Greeks, contract selection by delta, and a contract's daily OHLCV + IV + delta history for a short-call analysis | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/apextick/apextick-starter-kit/blob/main/notebooks/02_historical_options_greeks_backtest.ipynb) |
+
+Add your key as the Colab secret `APEXTICK_API_KEY` (key icon in the sidebar). Notebook 01 runs on the free Hobbyist plan; option chains and contract history need Trader Pro or above.
 
 ## Ready-to-Use Excel Workbooks (`excel/`) & REST Quickstarts
 

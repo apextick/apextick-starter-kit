@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apextick"
+version = "1.0.0"
+description = "Official Python client for the ApexTick market data API: batched quotes, OHLCV candles, technical indicators, fundamentals, and options chains with Greeks."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "ApexTick", email = "support@apextick.com" }]
+keywords = ["market-data", "stocks", "options", "greeks", "finance", "crypto", "forex", "api-client"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Typing :: Typed",
+]
+# Standard library only, so it runs anywhere Python does (Colab, Lambda, locked-down servers).
+dependencies = []
+
+[project.optional-dependencies]
+pandas = ["pandas>=1.3"]
+
+[project.urls]
+Homepage = "https://apextick.com"
+Documentation = "https://docs.apextick.com"
+Repository = "https://github.com/apextick/apextick-starter-kit"
+Issues = "https://github.com/apextick/apextick-starter-kit/issues"
+
+[tool.setuptools]
+packages = ["apextick"]
+
+[tool.setuptools.package-data]
+apextick = ["py.typed"]
