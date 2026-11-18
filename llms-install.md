@@ -11,9 +11,14 @@ The user needs a free ApexTick API key (Hobbyist plan: $0, 500 requests/day, no 
 
 ## 2. Add the server (pick one)
 
+Edit Cline's own MCP settings file; do not create a new `cline_mcp_settings.json` in the current workspace, because Cline never reads that copy. If the file already lists other servers, add `apextick` inside the existing `mcpServers` object.
+
+- **Cline in VS Code (or Cursor/Windsurf):** MCP Servers icon → **Configure** tab → **Configure MCP Servers** opens the right file. It is usually `<editor user data>/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` (on Windows, `%APPDATA%\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`).
+- **Cline CLI:** `~/.cline/data/settings/cline_mcp_settings.json`, or run `cline mcp add apextick https://api.apextick.com/mcp --transport http --header "apikey: dk_your_key_here" --yes`.
+
 ### Option A: hosted endpoint (recommended, nothing to install)
 
-Add this entry to `cline_mcp_settings.json`, replacing the key:
+Add this entry, replacing the key:
 
 ```json
 {
