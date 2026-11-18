@@ -24,14 +24,14 @@ Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) wit
 
 ## Usage
 
-### Option 1: `npx @apextick/mcp-server` (no clone needed)
+### Option 1: `npx` straight from this repository (no clone needed)
 
 ```json
 {
   "mcpServers": {
     "apextick": {
       "command": "npx",
-      "args": ["-y", "@apextick/mcp-server"],
+      "args": ["-y", "github:apextick/apextick-starter-kit"],
       "env": {
         "APEXTICK_API_KEY": "dk_your_key_here"
       }
@@ -40,7 +40,7 @@ Provides AI agents (Claude Desktop, Claude Code, Cursor, Windsurf, OpenCode) wit
 }
 ```
 
-Check your setup with `npx -y @apextick/mcp-server --help` (also `--version`). To run straight from this repository instead, use `npx -y github:apextick/apextick-starter-kit`.
+Check your setup with `npx -y github:apextick/apextick-starter-kit --help` (also `--version`). Requires Node.js 20+ and `git`.
 
 ### Option 2: Local Stdio Server (`src/index.mjs` or Docker)
 

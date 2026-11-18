@@ -7,7 +7,7 @@
  * get_quote, search_tickers, get_price_history, analyze_ticker,
  * explain_price_move, get_watchlist_brief, screen_market and get_options_chain.
  *
- * Usage: npx -y @apextick/mcp-server [--help | --version]
+ * Usage: npx -y github:apextick/apextick-starter-kit [--help | --version]
  */
 import { readFileSync } from 'node:fs';
 
@@ -25,9 +25,9 @@ const USAGE = `ApexTick MCP Server v${VERSION}
 Market data, technical indicators, fundamentals and options tools for AI agents, over stdio.
 
 Usage:
-  npx -y @apextick/mcp-server             Start the MCP server on stdin/stdout
-  npx -y @apextick/mcp-server --help      Show this help (-h)
-  npx -y @apextick/mcp-server --version   Print the version (-v)
+  npx -y github:apextick/apextick-starter-kit             Start the MCP server on stdin/stdout
+  npx -y github:apextick/apextick-starter-kit --help      Show this help (-h)
+  npx -y github:apextick/apextick-starter-kit --version   Print the version (-v)
 
 Environment:
   APEXTICK_API_KEY   Required. Your API key; get a free one at https://dash.apextick.com/register
@@ -36,7 +36,7 @@ Environment:
 Claude Desktop / Cursor (mcpServers entry):
   "apextick": {
     "command": "npx",
-    "args": ["-y", "@apextick/mcp-server"],
+    "args": ["-y", "github:apextick/apextick-starter-kit"],
     "env": { "APEXTICK_API_KEY": "dk_your_key_here" }
   }
 
