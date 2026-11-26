@@ -3,9 +3,9 @@
 Official Python client for the [ApexTick](https://apextick.com) market data API. It uses only the standard library, so it runs anywhere Python 3.9+ does, including Google Colab.
 
 ```bash
-pip install "git+https://github.com/apextick/apextick-starter-kit.git#subdirectory=python"
+pip install apextick
 # Optional DataFrame helper:
-pip install "apextick[pandas] @ git+https://github.com/apextick/apextick-starter-kit.git#subdirectory=python"
+pip install "apextick[pandas]"
 ```
 
 Set `APEXTICK_API_KEY` (get a free key at [dash.apextick.com/register](https://dash.apextick.com/register)), then:

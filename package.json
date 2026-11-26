@@ -33,7 +33,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/apextick/apextick-starter-kit.git"
+    "url": "git+https://github.com/apextick/apextick-starter-kit.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "homepage": "https://docs.apextick.com/mcp",
   "license": "MIT",

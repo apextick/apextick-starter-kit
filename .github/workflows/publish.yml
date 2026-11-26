@@ -1,0 +1,76 @@
+name: Publish SDK & MCP Packages (OIDC)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Registry target to publish"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - pypi
+          - npm
+
+jobs:
+  publish-pypi:
+    name: Publish Python SDK to PyPI
+    if: github.event_name == 'release' || inputs.target == 'all' || inputs.target == 'pypi'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Python SDK unit tests & build dist
+        run: |
+          python -m unittest discover -s python/tests -v
+          python -m pip install --upgrade pip build
+          python -m build python/
+
+      - name: Publish package to PyPI (OIDC Trusted Publisher)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist/
+
+  publish-npm:
+    name: Publish MCP Server to npm
+    if: github.event_name == 'release' || inputs.target == 'all' || inputs.target == 'npm'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24 (npm 11+ with OIDC support)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Smoke-test MCP CLI
+        run: |
+          npm --version
+          npm install --no-audit --no-fund
+          node ./src/index.mjs --version
+          node ./src/index.mjs --help
+
+      - name: Publish @apextick/mcp-server to npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then
+            npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          fi
+          npm publish --provenance --access public
